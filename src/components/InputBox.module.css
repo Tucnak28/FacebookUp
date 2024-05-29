@@ -1,0 +1,53 @@
+/* styles/InputBox.module.css */
+.inputBoxContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100vh;
+    background-color: #111;
+    color: #fff;
+  }
+  
+  .urlInput {
+    width: 100%;
+    margin-bottom: 20px;
+    border: 1px solid #666;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #222;
+    color: #fff;
+    transition: border-color 0.3s, background-color 0.3s, color 0.3s;
+  }
+  
+  .urlInput:focus {
+    outline: none;
+    border-color: #58a6ff;
+  }
+  
+  .urlInput::placeholder {
+    color: #888;
+  }
+  
+  .sendButton {
+    background-color: #0070f3;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  
+  .sendButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .message {
+    margin-top: 20px;
+    font-size: 14px;
+  }
+  

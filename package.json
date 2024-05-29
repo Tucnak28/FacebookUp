@@ -9,14 +9,23 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@cliqz/adblocker-puppeteer": "^1.27.3",
+    "@duckduckgo/autoconsent": "^1.0.8",
+    "@nextui-org/button": "^2.0.32",
+    "@nextui-org/react": "^2.4.0",
+    "@nextui-org/system": "^2.2.0",
+    "@nextui-org/theme": "^2.2.4",
+    "cross-fetch": "^4.0.0",
+    "framer-motion": "^11.2.6",
+    "next": "14.2.3",
+    "puppeteer": "^22.10.0",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "14.2.3"
+    "react-dom": "^18"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
-    "@types/react-dom": "^18"
+    "@types/react-dom": "^18",
+    "typescript": "^5"
   }
 }
