@@ -29,6 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // For testing purposes, we are hardcoding the username
     const username = "Tucnak32@post.cz";
+    const password = "password";
 
     if (!username || !password) {
       return res.status(400).json({ error: 'URL, username, and password are required' });
