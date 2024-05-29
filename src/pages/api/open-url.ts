@@ -22,14 +22,14 @@ function extractMbasicUrl(postUrl: string): string | null {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    let { url, message } = req.body;
+    let { url, comment } = req.body;
 
     // Convert URL to its "mbasic" version
     url = extractMbasicUrl(url);
 
     // For testing purposes, we are hardcoding the username
     const username = "Tucnak32@post.cz";
-    const password = "password";
+    const password = "Password";
 
     if (!username || !password) {
       return res.status(400).json({ error: 'URL, username, and password are required' });
@@ -45,18 +45,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await clickAcceptButton(page, ['Akzeptieren', 'Accept', 'Accept all cookies', 'Accept all', 'Allow', 'Allow all', 'Allow all cookies', 'Ok', 'Povolit všechny soubory cookie']);
 
       // Wait for a bit to ensure the cookies dialog is handled
-      await wait(1000);
+      await wait(2000);
 
       // Perform Facebook login
       await page.type('input[name="email"]', username); // Enter username
       await page.type('input[name="pass"]', password);  // Enter password
       await page.click('input[name="login"]'); // Click login button
 
-      // Type the comment
-      await page.type('input[name="comment_text"]', message); 
+      await wait(3000);
 
-      // Wait for navigation to complete after login
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      
+      // Type the comment
+      await page.type('textarea[name="comment_text"]', comment); 
+
+      await wait(1000);
+
+      await clickAcceptButton(page, ['comment']);
+
 
 
 
