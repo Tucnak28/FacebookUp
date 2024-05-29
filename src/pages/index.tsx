@@ -1,8 +1,12 @@
-// pages/index.tsx
 import Head from 'next/head';
 import InputBox from '../components/InputBox';
 
 const Home: React.FC = () => {
+  const handleSendMessage = (message: string) => {
+    // Handle sending the message here
+    console.log('Sending message:', message);
+  };
+
   return (
     <div className="container">
       <Head>
@@ -42,14 +46,32 @@ const Home: React.FC = () => {
               align-items: center;
             }
 
-            .footer {
-              width: 100%;
-              height: 80px;
+            .input-container {
               display: flex;
-              justify-content: center;
               align-items: center;
-              background-color: #333;
+            }
+
+            .input-container input {
+              width: 300px;
+              padding: 10px;
+              margin-right: 10px;
+              border-radius: 5px;
+              border: none;
+              outline: none;
+            }
+
+            .input-container button {
+              padding: 10px 20px;
+              background-color: #007bff;
               color: #fff;
+              border: none;
+              border-radius: 5px;
+              cursor: pointer;
+              outline: none;
+            }
+
+            .input-container button:hover {
+              background-color: #0056b3;
             }
           `}
         </style>
@@ -58,7 +80,7 @@ const Home: React.FC = () => {
       <main className="main">
         <h1 className="title">FacebookUp</h1>
 
-        <InputBox />
+        <InputBox onSend={handleSendMessage} />
       </main>
     </div>
   );
