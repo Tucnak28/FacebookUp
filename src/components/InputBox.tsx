@@ -1,7 +1,17 @@
 import React, { useState } from 'react';
 import './InputBox.module.css'; // Import CSS file
 
-const InputBox: React.FC = () => {
+interface Account {
+  name: string;
+  email: string;
+  password: string;
+}
+
+interface InputBoxProps {
+  selectedAccount: Account | null;
+}
+
+const InputBox: React.FC<InputBoxProps> = ({ selectedAccount }) => {
   const [url, setUrl] = useState('');
   const [comment, setComment] = useState('');
   const [message, setMessage] = useState('');
@@ -17,15 +27,22 @@ const InputBox: React.FC = () => {
   };
 
   const handleSendClick = async () => {
+    if (!selectedAccount) {
+      setMessage('Please select an account first.');
+      return;
+    }
+
+    const { email, password } = selectedAccount;
+
     setMessage('Sending comment...');
     try {
-      // Send the URL and comment to the server API for processing
+      // Send the URL, comment, email, and password to the server API for processing
       const response = await fetch('/api/open-url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ url, comment }),
+        body: JSON.stringify({ url, comment, email, password }),
       });
 
       const data = await response.json();

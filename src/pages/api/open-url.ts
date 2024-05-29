@@ -1,13 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import puppeteer, { Page } from 'puppeteer';
 
-// Function to convert URL to its "mbasic" version
-function convertToMbasicUrl(url: string): string {
-  const urlObject = new URL(url);
-  urlObject.hostname = urlObject.hostname.replace('www', 'mbasic');
-  return urlObject.href;
-}
-
 function extractMbasicUrl(postUrl: string): string | null {
   // Check if the post URL is valid
   const match = postUrl.match(/facebook\.com\/photo\/\?fbid=(\d+)/);
@@ -21,21 +14,17 @@ function extractMbasicUrl(postUrl: string): string | null {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
-    let { url, comment } = req.body;
+    let { url, comment, email, password } = req.body;
 
     // Convert URL to its "mbasic" version
     url = extractMbasicUrl(url);
 
-    // For testing purposes, we are hardcoding the username
-    const username = "email";
-    const password = "password";
-
-    if (!username || !password) {
+    if (!email || !password) {
       return res.status(400).json({ error: 'URL, username, and password are required' });
     }
 
     try {
-      const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--start-maximized'] });
+      const browser = await puppeteer.launch({ headless: true, defaultViewport: null, args: ['--start-maximized'] });
       const page = await browser.newPage();
 
       await page.goto(url, { waitUntil: 'networkidle2' });
@@ -47,7 +36,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await page.waitForSelector('input[name="email"]');
 
       // Perform Facebook login
-      await page.type('input[name="email"]', username); // Enter username
+      await page.type('input[name="email"]', email); // Enter username
       await page.type('input[name="pass"]', password);  // Enter password
       await page.click('input[name="login"]'); // Click login button
 
