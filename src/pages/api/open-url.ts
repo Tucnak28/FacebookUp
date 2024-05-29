@@ -9,7 +9,7 @@ function extractMbasicUrl(postUrl: string): string | null {
   }
 
   const fbid = match[1];
-  return `https://mbasic.facebook.com/mbasic/comment/advanced/?target_id=${fbid}&pap&at=compose&photo_comment&eav=AfahHvprPR3vC18l81hkdCazQHrCIsPPsVRJ6_fvI6KDjDIIxMU--G5fjizqa4igBVE&paipv=0&refid=13`;
+  return `https://mbasic.facebook.com/mbasic/comment/advanced/?target_id=${fbid}&at=compose&eav=AfahHvprPR3vC18l81hkdCazQHrCIsPPsVRJ6_fvI6KDjDIIxMU--G5fjizqa4igBVE`;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
