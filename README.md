@@ -32,7 +32,7 @@ FacebookUp is a web application that allows users to post comments on Facebook p
 
 ## Usage
 
-1. Create an `accounts.json` file in the root directory of the project.
+1. Create an `accounts.json` file in the public folder.
 2. Add the Facebook accounts you want to use for posting comments in the following format:
 
    ```json
