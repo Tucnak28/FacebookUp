@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './InputBox.module.css'; // Import CSS file
+import styles from './InputBox.module.css'; 
 
 interface Account {
   name: string;
@@ -58,20 +58,18 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount }) => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+    <div className={styles.container}>
       <input
         type="text"
         value={url}
         onChange={handleUrlChange}
         placeholder="URL"
-        style={{ marginBottom: '1rem' }}
       />
       <input
         type="text"
         value={comment}
         onChange={handleCommentChange}
         placeholder="Comment"
-        style={{ marginBottom: '1rem' }}
       />
       <button onClick={handleSendClick}>Send Comment</button>
       <p>{message}</p>

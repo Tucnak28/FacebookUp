@@ -60,9 +60,7 @@ const Home: React.FC = () => {
             }
 
             .title {
-              margin: 0;
-              line-height: 1.15;
-              font-size: 4rem;
+              font-size: 3rem;
             }
 
             .main {
@@ -116,3 +114,4 @@ const Home: React.FC = () => {
 };
 
 export default Home;
+  
