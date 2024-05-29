@@ -1,4 +1,3 @@
-// src/pages/api/open-url.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
 import puppeteer, { Page } from 'puppeteer';
 
@@ -28,8 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     url = extractMbasicUrl(url);
 
     // For testing purposes, we are hardcoding the username
-    const username = "Tucnak32@post.cz";
-    const password = "Password";
+    const username = "email";
+    const password = "password";
 
     if (!username || !password) {
       return res.status(400).json({ error: 'URL, username, and password are required' });
@@ -44,29 +43,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Handle "Accept Cookies" popup using the logic from the Börse Frankfurt script
       await clickAcceptButton(page, ['Akzeptieren', 'Accept', 'Accept all cookies', 'Accept all', 'Allow', 'Allow all', 'Allow all cookies', 'Ok', 'Povolit všechny soubory cookie']);
 
-      // Wait for a bit to ensure the cookies dialog is handled
-      await wait(2000);
+      // Wait for login form to appear
+      await page.waitForSelector('input[name="email"]');
 
       // Perform Facebook login
       await page.type('input[name="email"]', username); // Enter username
       await page.type('input[name="pass"]', password);  // Enter password
       await page.click('input[name="login"]'); // Click login button
 
-      await wait(3000);
+      // Wait for comment form to appear
+      await page.waitForSelector('textarea[name="comment_text"]');
 
-      
       // Type the comment
-      await page.type('textarea[name="comment_text"]', comment); 
+      await page.type('textarea[name="comment_text"]', comment);
 
-      await wait(1000);
+      // Click the post button
+      await page.click('input[name="post"]');
 
-      await clickAcceptButton(page, ['comment']);
+      // Wait for navigation to complete after posting comment
+      await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
-
-
-
-      // Take a screenshot after login
+      // Take a screenshot after posting comment
       const screenshot = await page.screenshot({ encoding: 'base64' });
+      
+      // Close the browser
       await browser.close();
 
       return res.status(200).json({ message: 'Comment sent successfully', screenshot });
@@ -110,6 +110,7 @@ async function clickAcceptButton(page: Page, buttonTexts: string[]) {
     }
   }
 }
+
 
 async function wait(delay: number) {
   return new Promise(function (resolve, reject) {
