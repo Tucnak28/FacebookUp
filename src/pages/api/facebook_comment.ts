@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const browser = await puppeteer.launch({ headless: true, defaultViewport: null, args: ['--start-maximized'] });
+      const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--start-maximized'] });
       const page = await browser.newPage();
 
       await page.goto(url, { waitUntil: 'networkidle2' });
@@ -50,7 +50,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await page.click('input[name="post"]');
 
       // Wait for navigation to complete after posting comment
-      await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      //await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
       // Take a screenshot after posting comment
       const screenshot = await page.screenshot({ encoding: 'base64' });

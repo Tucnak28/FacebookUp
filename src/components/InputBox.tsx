@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styles from './InputBox.module.css'; 
+import styles from './InputBox.module.css'; // Import CSS file
 
 interface Account {
   name: string;
@@ -9,9 +9,10 @@ interface Account {
 
 interface InputBoxProps {
   selectedAccount: Account | null;
+  platform: 'facebook' | 'instagram';
 }
 
-const InputBox: React.FC<InputBoxProps> = ({ selectedAccount }) => {
+const InputBox: React.FC<InputBoxProps> = ({ selectedAccount, platform }) => {
   const [url, setUrl] = useState('');
   const [comment, setComment] = useState('');
   const [message, setMessage] = useState('');
@@ -36,8 +37,8 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount }) => {
 
     setMessage('Sending comment...');
     try {
-      // Send the URL, comment, email, and password to the server API for processing
-      const response = await fetch('/api/open-url', {
+      // Send the URL, comment, email, password, and platform to the server API for processing
+      const response = await fetch(`/api/${platform}_comment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,20 +60,24 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount }) => {
 
   return (
     <div className={styles.container}>
-      <input
-        type="text"
-        value={url}
-        onChange={handleUrlChange}
-        placeholder="URL"
-      />
-      <input
-        type="text"
-        value={comment}
-        onChange={handleCommentChange}
-        placeholder="Comment"
-      />
-      <button onClick={handleSendClick}>Send Comment</button>
-      <p>{message}</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <input
+          type="text"
+          value={url}
+          onChange={handleUrlChange}
+          placeholder="URL"
+          style={{ marginBottom: '1rem' }}
+        />
+        <input
+          type="text"
+          value={comment}
+          onChange={handleCommentChange}
+          placeholder="Comment"
+          style={{ marginBottom: '1rem' }}
+        />
+        <button onClick={handleSendClick}>Send Comment</button>
+        <p>{message}</p>
+      </div>
     </div>
   );
 };

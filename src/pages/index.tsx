@@ -1,38 +1,14 @@
 import Head from 'next/head';
 import InputBox from '../components/InputBox';
 import SlideableBar from '../components/SlideableBar';
-import { useState, useEffect } from 'react';
-
-interface Account {
-  name: string;
-  email: string;
-  password: string;
-}
+import { useState } from 'react';
 
 const Home: React.FC = () => {
-  const [accounts, setAccounts] = useState<Account[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [selectedAccount, setSelectedAccount] = useState<null | { name: string; email: string; password: string }>(null);
+  const [platform, setPlatform] = useState<'facebook' | 'instagram'>('facebook');
 
-  useEffect(() => {
-    // Load accounts from the accounts.json file
-    fetch('/accounts.json')
-      .then((response) => response.json())
-      .then((data) => setAccounts(data))
-      .catch((error) => console.error('Error loading accounts:', error));
-  }, []);
-
-  const handleSendMessage = (message: string) => {
-    // Handle sending the message with the selected account
-    if (selectedAccount) {
-      console.log('Sending message:', message, 'with account:', selectedAccount);
-    } else {
-      console.log('No account selected');
-    }
-  };
-
-  const handleAccountSelect = (account: Account) => {
+  const handleAccountSelect = (account: { name: string; email: string; password: string }) => {
     setSelectedAccount(account);
-    console.log('Selected account:', account);
   };
 
   return (
@@ -41,77 +17,116 @@ const Home: React.FC = () => {
         <title>FacebookUp</title>
         <meta name="description" content="index" />
         <link rel="icon" href="/favicon.ico" />
-        <style>
-          {`
-            body {
-              margin: 0;
-              padding: 0;
-            }
+        <style>{`
+          body {
+            margin: 0;
+            padding: 0;
+          }
 
-            .container {
-              min-height: 100vh;
-              display: flex;
-              flex-direction: column;
-              justify-content: center;
-              align-items: center;
-              background-color: #111;
-              color: #fff;
-              font-family: Arial, sans-serif;
-            }
+          .container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+          }
 
-            .title {
-              font-size: 3rem;
-            }
+          .title {
+            margin: 0;
+            line-height: 1.15;
+            font-size: 4rem;
+          }
 
-            .main {
-              padding: 5rem 0;
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-            }
+          .main {
+            padding: 5rem 0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
 
-            .input-container {
-              display: flex;
-              align-items: center;
-            }
+          .input-container {
+            display: flex;
+            align-items: center;
+          }
 
-            .input-container input {
-              width: 300px;
-              padding: 10px;
-              margin-right: 10px;
-              border-radius: 5px;
-              border: none;
-              outline: none;
-            }
+          .input-container input {
+            width: 300px;
+            padding: 10px;
+            margin-right: 10px;
+            border-radius: 5px;
+            border: none;
+            outline: none;
+          }
 
-            .input-container button {
-              padding: 10px 20px;
-              background-color: #007bff;
-              color: #fff;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              outline: none;
-            }
+          .input-container button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+          }
 
-            .input-container button:hover {
-              background-color: #0056b3;
-            }
-          `}
-        </style>
+          .input-container button:hover {
+            background-color: #0056b3;
+          }
+
+          .selectPlatform {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+          }
+
+          .selectPlatform button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s;
+          }
+
+          .selectPlatform button:hover {
+            background-color: #555;
+          }
+
+          .selectPlatform button.selected {
+            background-color: #007bff;
+          }
+        `}</style>
       </Head>
 
       <main className="main">
         <h1 className="title">FacebookUp</h1>
+        <div className="selectPlatform">
+          <button
+            className={platform === 'facebook' ? 'selected' : ''}
+            onClick={() => setPlatform('facebook')}
+          >
+            Facebook
+          </button>
+          <button
+            className={platform === 'instagram' ? 'selected' : ''}
+            onClick={() => setPlatform('instagram')}
+          >
+            Instagram
+          </button>
+        </div>
 
-        <InputBox selectedAccount={selectedAccount} onSend={handleSendMessage} />
+        <InputBox selectedAccount={selectedAccount} platform={platform} />
       </main>
 
-      <SlideableBar accounts={accounts} selectedAccount={selectedAccount} onSelect={handleAccountSelect} />
+      <SlideableBar selectedPlatform={platform} onSelect={handleAccountSelect} />
     </div>
   );
 };
 
 export default Home;
-  

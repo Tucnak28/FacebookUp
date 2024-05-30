@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface Account {
   name: string;
@@ -7,22 +7,38 @@ interface Account {
 }
 
 interface SlideableBarProps {
-  accounts: Account[];
-  selectedAccount: Account | null;
+  selectedPlatform: 'facebook' | 'instagram';
   onSelect: (account: Account) => void;
 }
 
-const SlideableBar: React.FC<SlideableBarProps> = ({ accounts, selectedAccount, onSelect }) => {
+const SlideableBar: React.FC<SlideableBarProps> = ({ selectedPlatform, onSelect }) => {
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+
+  useEffect(() => {
+    const accountsFile = selectedPlatform === 'facebook' ? 'facebook_accounts.json' : 'instagram_accounts.json';
+
+    fetch(`/${accountsFile}`)
+      .then((response) => response.json())
+      .then((data) => setAccounts(data))
+      .catch((error) => console.error('Error loading accounts:', error));
+  }, [selectedPlatform]);
+
+  const handleSelect = (account: Account) => {
+    setSelectedAccount(account);
+    onSelect(account);
+  };
+
   return (
     <div className="slideable-bar">
       {accounts.map((account) => (
-        <div
+        <button
           key={account.email}
+          onClick={() => handleSelect(account)}
           className={`account ${selectedAccount?.email === account.email ? 'selected' : ''}`}
-          onClick={() => onSelect(account)}
         >
           {account.name}
-        </div>
+        </button>
       ))}
       <style jsx>{`
         .slideable-bar {
@@ -37,8 +53,10 @@ const SlideableBar: React.FC<SlideableBarProps> = ({ accounts, selectedAccount, 
           margin-right: 10px;
           background-color: #444;
           color: #fff;
+          border: none;
           border-radius: 5px;
           cursor: pointer;
+          outline: none;
         }
         .account.selected {
           background-color: #007bff;

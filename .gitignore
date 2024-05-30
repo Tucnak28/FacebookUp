@@ -19,7 +19,9 @@
 # misc
 .DS_Store
 *.pem
-accounts.json
+instagram_accounts.json
+facebook_accounts.json
+
 
 # debug
 npm-debug.log*
