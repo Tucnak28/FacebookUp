@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--start-maximized'] });
+      const browser = await puppeteer.launch({ headless: true, defaultViewport: null, args: ['--start-maximized', '--lang=en-US'] });
       const page = await browser.newPage();
 
       await page.goto(url, { waitUntil: 'networkidle2' });

@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const browser = await puppeteer.launch({ headless: true    }); // Launch browser in non-headless mode for debugging
+      const browser = await puppeteer.launch({ headless: true, defaultViewport: null, args: ['--start-maximized', '--lang=en-US']  }); // Launch browser in non-headless mode for debugging
       const page = await browser.newPage();
 
       // Navigate to the Instagram login page
@@ -38,10 +38,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Replace the following lines with your specific actions
 
       // Wait for the comment form to appear
-      await page.waitForSelector('textarea[placeholder="Přidejte komentář..."]');
+      await page.waitForSelector('textarea[autocorrect="off"]');
 
       // Type the comment
-    await page.type('textarea[placeholder="Přidejte komentář..."]', comment);
+    await page.type('textarea[autocorrect="off"]', comment);
 
     // Press the Enter key
     await page.keyboard.press('Enter');
