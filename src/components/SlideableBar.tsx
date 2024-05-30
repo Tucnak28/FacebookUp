@@ -35,7 +35,7 @@ const SlideableBar: React.FC<SlideableBarProps> = ({ selectedPlatform, onSelect 
         <button
           key={account.email}
           onClick={() => handleSelect(account)}
-          className={`account ${selectedAccount?.email === account.email ? 'selected' : ''}`}
+          className={`account ${selectedAccount?.name === account.name ? 'selected' : ''}`}
         >
           {account.name}
         </button>
