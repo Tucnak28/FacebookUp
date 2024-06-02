@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './InputBox.module.css'; // Import CSS file
 
 interface Account {
@@ -12,10 +12,16 @@ interface InputBoxProps {
   platform: 'facebook' | 'instagram';
 }
 
+interface Message {
+  id: number;
+  text: string;
+  account: string;
+}
+
 const InputBox: React.FC<InputBoxProps> = ({ selectedAccount, platform }) => {
   const [url, setUrl] = useState('');
   const [comment, setComment] = useState('');
-  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([]);
 
   const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
@@ -29,13 +35,13 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount, platform }) => {
 
   const handleSendClick = async () => {
     if (!selectedAccount) {
-      setMessage('Please select an account first.');
+      addMessage('Please select an account first.', 'System');
       return;
     }
 
-    const { email, password } = selectedAccount;
+    const { email, password, name } = selectedAccount;
 
-    setMessage('Sending comment...');
+    addMessage('Sending comment...', name);
     try {
       // Send the URL, comment, email, password, and platform to the server API for processing
       const response = await fetch(`/api/${platform}_comment`, {
@@ -48,15 +54,32 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount, platform }) => {
 
       const data = await response.json();
       if (response.ok) {
-        setMessage('Comment sent successfully!');
+        addMessage('Comment sent successfully!', name);
       } else {
-        setMessage(`Failed to send comment: ${data.error}`);
+        addMessage(`Failed to send comment: ${data.error}`, name);
       }
     } catch (error) {
-      setMessage('An error occurred while sending the comment.');
+      addMessage('An error occurred while sending the comment.', name);
       console.error(error);
     }
   };
+
+  const addMessage = (text: string, account: string) => {
+    const newMessage: Message = {
+      id: Date.now(),
+      text,
+      account,
+    };
+    setMessages((prevMessages) => [...prevMessages, newMessage]);
+  };
+
+  useEffect(() => {
+    // Remove messages after 10 seconds
+    const timer = setTimeout(() => {
+      setMessages((prevMessages) => prevMessages.slice(1));
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [messages]);
 
   return (
     <div className={styles.container}>
@@ -76,7 +99,13 @@ const InputBox: React.FC<InputBoxProps> = ({ selectedAccount, platform }) => {
           style={{ marginBottom: '1rem' }}
         />
         <button onClick={handleSendClick}>Send Comment</button>
-        <p>{message}</p>
+        <div className={styles.messages}>
+          {messages.map((message) => (
+            <p key={message.id} className={styles.message}>
+              <strong>{message.account}:</strong> {message.text}
+            </p>
+          ))}
+        </div>
       </div>
     </div>
   );

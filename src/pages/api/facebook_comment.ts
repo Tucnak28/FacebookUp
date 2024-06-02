@@ -3,7 +3,7 @@ import puppeteer, { Page } from 'puppeteer';
 
 function extractMbasicUrl(postUrl: string): string | null {
   // Check if the post URL is valid
-  const match = postUrl.match(/facebook\.com\/photo\/\?fbid=(\d+)/);
+  const match = postUrl.match(/facebook\.com\/(?:photo\?fbid=|groups\/)(\d+)/);
   if (!match || match.length < 2) {
     return null; // Invalid post URL format
   }
@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const browser = await puppeteer.launch({ headless: true, defaultViewport: null, args: ['--start-maximized', '--lang=en-US'] });
+      const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--start-maximized', '--lang=en-US'] });
       const page = await browser.newPage();
 
       await page.goto(url, { waitUntil: 'networkidle2' });

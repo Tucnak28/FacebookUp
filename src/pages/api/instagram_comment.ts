@@ -52,6 +52,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Close the browser
       await browser.close();
 
+      console.log('Comment sent successfully');
       return res.status(200).json({ message: 'Comment sent successfully', screenshot });
     } catch (error) {
       console.error('Error:', error);
