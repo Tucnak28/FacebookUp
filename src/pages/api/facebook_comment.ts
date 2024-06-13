@@ -1,6 +1,6 @@
 // mainHandler.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import puppeteer, { Page, Browser } from "puppeteer";
+import puppeteer, { Page, Browser, Cookie } from "puppeteer";
 import { getCookies, saveCookies, setCookies } from "./cookieManager";
 
 const userAgent = "Mozilla/5.0 (Linux; Android 6.0.1; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Mobile Safari/537.36";
@@ -103,7 +103,7 @@ const wait = async (delay: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
-const setup = async (email: string): Promise<{ browser: Browser; page: Page }> => {
+const setup = async (email: string, password: string): Promise<{ browser: Browser; page: Page }> => {
   const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ["--start-maximized", "--lang=en-US"] });
   const page = await browser.newPage();
   await page.setUserAgent(userAgent);
@@ -113,35 +113,35 @@ const setup = async (email: string): Promise<{ browser: Browser; page: Page }> =
   if (cookies) {
     await setCookies(page, cookies);
   } else {
-    console.error(`Cookies not found for email: ${email}`);
-    // Handle the case where cookies are not found, possibly prompt for login again
+    console.log(`Cookies not found for email: ${email}. Logging in...`);
+    await loginToFacebook(page, email, password); // Assuming password is available globally or passed in from somewhere
+    await saveCookies(email, await page.cookies());
   }
 
-  return { browser, page };
+  return { browser, page, cookies };
 };
+
 
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
-    let { url, comment, email, password } = req.body;
+    const { url, comment, email, password } = req.body;
 
-    url = extractMbasicUrl(url);
+    const mbasicUrl = extractMbasicUrl(url);
 
-    if (!email || !password || !url) {
+    if (!email || !password || !mbasicUrl) {
       return res.status(400).json({ error: "URL, email, and password are required" });
     }
 
     try {
-      const { browser, page } = await setup(email);
+      const { browser, page } = await setup(email, password);
 
-      await navigateToUrl(page, url);
+      await navigateToUrl(page, mbasicUrl);
       await handleAcceptCookies(page, ["Akzeptieren", "Accept", "Accept all cookies", "Accept all", "Allow", "Allow all", "Allow all cookies", "Ok", "Povolit všechny soubory cookie"]);
-      await loginToFacebook(page, email, password);
+
       await postComment(page, comment);
       const screenshot = await takeScreenshot(page);
-
-      await saveCookies(email, await page.cookies());
 
       await browser.close();
 
@@ -154,3 +154,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: "Method not allowed" });
   }
 }
+
