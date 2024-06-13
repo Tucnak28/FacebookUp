@@ -4,7 +4,7 @@ import puppeteer, { Page, Browser, Cookie } from "puppeteer";
 import { getCookies, saveCookies, setCookies } from "./cookieManager";
 
 const userAgent = "Mozilla/5.0 (Linux; Android 6.0.1; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Mobile Safari/537.36";
-const mainPageURL = "https://m.facebook.com";
+const mainPageURL = "https://mbasic.facebook.com";
 
 function extractMbasicUrl(postUrl: string): string | null {
   const match = postUrl.match(/facebook\.com\/(?:.*\/)?(?:photo\.php\?fbid=|photo\/\?fbid=|permalink\.php\?story_fbid=|posts\/|videos\/|video\.php\?v=|groups\/[^\/]+\/permalink\/|reel\/)(\d+)/);
@@ -103,22 +103,43 @@ const wait = async (delay: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
-const setup = async (email: string, password: string): Promise<{ browser: Browser; page: Page }> => {
+const setup = async (email: string, password: string): Promise<{ browser: Browser; page: Page; cookies?: BrowserCookie[] }> => {
   const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ["--start-maximized", "--lang=en-US"] });
   const page = await browser.newPage();
   await page.setUserAgent(userAgent);
   await page.goto(mainPageURL);
 
-  const cookies = await getCookies(email);
+  await handleAcceptCookies(page, ["Akzeptieren", "Accept", "Accept all cookies", "Accept all", "Allow", "Allow all", "Allow all cookies", "Ok", "Povolit všechny soubory cookie"]);
+
+  let cookies = await getCookies(email);
   if (cookies) {
     await setCookies(page, cookies);
   } else {
     console.log(`Cookies not found for email: ${email}. Logging in...`);
-    await loginToFacebook(page, email, password); // Assuming password is available globally or passed in from somewhere
-    await saveCookies(email, await page.cookies());
+    await loginToFacebook(page, email, password);
+    cookies = await page.cookies(); // Fetch cookies after successful login
+    await saveCookies(email, cookies);
   }
 
-  return { browser, page, cookies };
+  // Check if we are still logged in by verifying a selector on the logged-in page
+  const isLoggedIn = await checkLoggedIn(page);
+  if (!isLoggedIn) {
+    console.log(`Logged out unexpectedly for email: ${email}. Re-logging in...`);
+    await loginToFacebook(page, email, password); // Attempt to login again
+    cookies = await page.cookies(); // Update cookies after re-login
+    await saveCookies(email, cookies);
+  }
+
+  return { browser, page };
+};
+
+const checkLoggedIn = async (page: Page): Promise<boolean> => {
+  try {
+    await page.waitForSelector("input[name=email]", { timeout: 1000 });
+    return false;
+  } catch (error) {
+    return true;
+  }
 };
 
 
