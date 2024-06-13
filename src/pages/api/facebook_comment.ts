@@ -19,49 +19,74 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Convert URL to its "mbasic" version
     url = extractMbasicUrl(url);
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'URL, username, and password are required' });
+    if (!email || !password || !url) {
+      return res.status(400).json({ error: 'URL, email, and password are required' });
     }
 
     try {
       const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ['--start-maximized', '--lang=en-US'] });
       const page = await browser.newPage();
 
-      await page.goto(url, { waitUntil: 'networkidle2' });
+      try {
+        await page.goto(url, { waitUntil: 'networkidle2' });
+      } catch (error) {
+        console.error("Error navigating to URL:", error);
+        await browser.close();
+        return res.status(500).json({ error: 'Failed to navigate to the URL' });
+      }
 
-      // Handle "Accept Cookies" popup using the logic from the Börse Frankfurt script
-      await clickAcceptButton(page, ['Akzeptieren', 'Accept', 'Accept all cookies', 'Accept all', 'Allow', 'Allow all', 'Allow all cookies', 'Ok', 'Povolit všechny soubory cookie']);
+      try {
+        // Handle "Accept Cookies" popup
+        await clickAcceptButton(page, ['Akzeptieren', 'Accept', 'Accept all cookies', 'Accept all', 'Allow', 'Allow all', 'Allow all cookies', 'Ok', 'Povolit všechny soubory cookie']);
+      } catch (error) {
+        console.error("Error clicking accept button:", error);
+      }
 
-      // Wait for login form to appear
-      await page.waitForSelector('input[name="email"]');
+      try {
+        // Wait for login form to appear
+        await page.waitForSelector('input[name="email"]');
 
-      // Perform Facebook login
-      await page.type('input[name="email"]', email); // Enter username
-      await page.type('input[name="pass"]', password);  // Enter password
-      await page.click('input[name="login"]'); // Click login button
+        // Perform Facebook login
+        await page.type('input[name="email"]', email); // Enter email
+        await page.type('input[name="pass"]', password);  // Enter password
+        await page.click('input[name="login"]'); // Click login button
+      } catch (error) {
+        console.error("Error during login:", error);
+        await browser.close();
+        return res.status(500).json({ error: 'Failed to log in to Facebook' });
+      }
 
-      // Wait for comment form to appear
-      await page.waitForSelector('textarea[name="comment_text"]');
+      try {
+        // Wait for comment form to appear
+        await page.waitForSelector('textarea[name="comment_text"]');
 
-      // Type the comment
-      await page.type('textarea[name="comment_text"]', comment);
+        // Type the comment
+        await page.type('textarea[name="comment_text"]', comment);
 
-      // Click the post button
-      await page.click('input[name="post"]');
+        // Click the post button
+        await page.click('input[name="post"]');
+      } catch (error) {
+        console.error("Error posting comment:", error);
+        await browser.close();
+        return res.status(500).json({ error: 'Failed to post the comment' });
+      }
 
-      // Wait for navigation to complete after posting comment
-      //await page.waitForNavigation({ waitUntil: 'networkidle2' });
+      try {
+        // Take a screenshot after posting comment
+        const screenshot = await page.screenshot({ encoding: 'base64' });
 
-      // Take a screenshot after posting comment
-      const screenshot = await page.screenshot({ encoding: 'base64' });
-      
-      // Close the browser
-      await browser.close();
+        // Close the browser
+        await browser.close();
 
-      return res.status(200).json({ message: 'Comment sent successfully', screenshot });
+        return res.status(200).json({ message: 'Comment sent successfully', screenshot });
+      } catch (error) {
+        console.error("Error taking screenshot:", error);
+        await browser.close();
+        return res.status(500).json({ error: 'Failed to take screenshot' });
+      }
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: 'Failed to send comment' });
+      console.error("Error in Puppeteer setup:", error);
+      return res.status(500).json({ error: 'Failed to set up Puppeteer' });
     }
   } else {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -99,7 +124,6 @@ async function clickAcceptButton(page: Page, buttonTexts: string[]) {
     }
   }
 }
-
 
 async function wait(delay: number) {
   return new Promise(function (resolve, reject) {
