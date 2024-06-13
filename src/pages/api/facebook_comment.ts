@@ -3,7 +3,7 @@ import puppeteer, { Page } from 'puppeteer';
 
 function extractMbasicUrl(postUrl: string): string | null {
   // Check if the post URL is valid and extract the post ID
-  const match = postUrl.match(/facebook\.com\/(?:.*\/)?(?:photo\.php\?fbid=|photo\/\?fbid=|permalink\.php\?story_fbid=|posts\/|videos\/|video\.php\?v=|groups\/[^\/]+\/permalink\/)(\d+)/);
+  const match = postUrl.match(/facebook\.com\/(?:.*\/)?(?:photo\.php\?fbid=|photo\/\?fbid=|permalink\.php\?story_fbid=|posts\/|videos\/|video\.php\?v=|groups\/[^\/]+\/permalink\/|reel\/)(\d+)/);
   if (!match || match.length < 2) {
     console.log("URL parsing error");
     return null; // Invalid post URL format
@@ -12,6 +12,7 @@ function extractMbasicUrl(postUrl: string): string | null {
   const fbid = match[1];
   return `https://mbasic.facebook.com/mbasic/comment/advanced/?target_id=${fbid}&at=compose`;
 }
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
