@@ -57,30 +57,54 @@ export const setCookies = async (page: puppeteer.Page, cookies: BrowserCookie[])
     await page.setCookie(...cookies);
   };
   
-export const getCookies = async (email: string): Promise<BrowserCookie[] | null> => {
+  export const getCookies = async (email: string): Promise<BrowserCookie[] | null> => {
     try {
-      const data = await fs.readFile(cookiesFilePath, "utf-8");
-      const storedData: StoredCookieData = JSON.parse(data);
-      if (storedData.email === email) {
-        return storedData.cookies;
-      }
-      return null; // Return null if email doesn't match
+        const data = await fs.readFile(cookiesFilePath, "utf-8");
+        const storedData: StoredCookieData[] = JSON.parse(data);
+        
+        // Find stored cookies for the given email
+        const storedCookies = storedData.find(entry => entry.email === email);
+        
+        if (storedCookies) {
+            return storedCookies.cookies;
+        }
+        
+        return null; // Return null if email's cookies are not found
     } catch (error) {
-      console.error("Error reading cookies:", error);
-      return null;
+        console.error("Error reading cookies:", error);
+        return null;
     }
-  };
+};
+
   
 
 export const saveCookies = async (email: string, cookies: BrowserCookie[]) => {
-    try {
-      const storedData: StoredCookieData = {
-        email,
-        cookies,
-      };
+  try {
+      let storedData: StoredCookieData[] = [];
+      
+      // Read existing cookies data
+      try {
+          const data = await fs.readFile(cookiesFilePath, "utf-8");
+          storedData = JSON.parse(data);
+      } catch (error) {
+          // Ignore if file doesn't exist or cannot be read
+      }
+      
+      // Check if there's already stored data for this email
+      const index = storedData.findIndex(entry => entry.email === email);
+      
+      if (index !== -1) {
+          // Update existing entry
+          storedData[index].cookies = cookies;
+      } else {
+          // Add new entry
+          storedData.push({ email, cookies });
+      }
+      
+      // Save updated cookies data
       await fs.writeFile(cookiesFilePath, JSON.stringify(storedData), "utf-8");
-    } catch (error) {
+  } catch (error) {
       console.error("Error saving cookies:", error);
-    }
-  };
-  
+  }
+};
+
