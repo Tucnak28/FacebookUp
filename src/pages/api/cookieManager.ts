@@ -1,36 +1,43 @@
+import puppeteer, { Browser, Page } from "puppeteer";
 import fs from "fs/promises";
-import puppeteer from "puppeteer";
 
 const cookiesFilePath = "./cookies.json";
 
+// Define a type for cookies including email
+type StoredCookieData = {
+    email: string;
+    cookies: BrowserCookie[];
+  };
+  
 
+// Define types for cookie conversion
 type APICookie = {
-    key: string;
-    value: string;
-    domain: string;
-    path: string;
-    expires: number;
-    size: number;
-    httpOnly: boolean;
-    secure: boolean;
-    session: boolean;
-    sameSite: string;
-  };
-  
-  type BrowserCookie = {
-    name: string;
-    value: string;
-    domain: string;
-    path: string;
-    expires: number;
-    size: number;
-    httpOnly: boolean;
-    secure: boolean;
-    session: boolean;
-    sameSite: string;
-  };
-  
+  key: string;
+  value: string;
+  domain: string;
+  path: string;
+  expires: number;
+  size: number;
+  httpOnly: boolean;
+  secure: boolean;
+  session: boolean;
+  sameSite: string;
+};
 
+type BrowserCookie = {
+  name: string;
+  value: string;
+  domain: string;
+  path: string;
+  expires: number;
+  size: number;
+  httpOnly: boolean;
+  secure: boolean;
+  session: boolean;
+  sameSite: string;
+};
+
+// Convert API cookies to Browser cookies
 const apiToBrowserCookies = (cookies: APICookie[]): BrowserCookie[] => {
   return cookies.map((cookie: APICookie): BrowserCookie => {
     const { key, ...rest } = cookie;
@@ -38,6 +45,7 @@ const apiToBrowserCookies = (cookies: APICookie[]): BrowserCookie[] => {
   });
 };
 
+// Convert Browser cookies to API cookies
 const browserToAPICookies = (cookies: BrowserCookie[]): APICookie[] => {
   return cookies.map((cookie: BrowserCookie): APICookie => {
     const { name, ...rest } = cookie;
@@ -48,22 +56,31 @@ const browserToAPICookies = (cookies: BrowserCookie[]): APICookie[] => {
 export const setCookies = async (page: puppeteer.Page, cookies: BrowserCookie[]) => {
     await page.setCookie(...cookies);
   };
-
-  export const saveCookies = async (page: puppeteer.Page) => {
-    const cookies = await page.cookies();
-    const storedCookies = browserToAPICookies(cookies);
-    await fs.writeFile(cookiesFilePath, JSON.stringify(storedCookies), "utf-8");
+  
+export const getCookies = async (email: string): Promise<BrowserCookie[] | null> => {
+    try {
+      const data = await fs.readFile(cookiesFilePath, "utf-8");
+      const storedData: StoredCookieData = JSON.parse(data);
+      if (storedData.email === email) {
+        return storedData.cookies;
+      }
+      return null; // Return null if email doesn't match
+    } catch (error) {
+      console.error("Error reading cookies:", error);
+      return null;
+    }
   };
   
 
-  export const getCookies = async (): Promise<BrowserCookie[]> => {
+export const saveCookies = async (email: string, cookies: BrowserCookie[]) => {
     try {
-      const data = await fs.readFile(cookiesFilePath, "utf-8");
-      const cookies: APICookie[] = JSON.parse(data);
-      return apiToBrowserCookies(cookies);
+      const storedData: StoredCookieData = {
+        email,
+        cookies,
+      };
+      await fs.writeFile(cookiesFilePath, JSON.stringify(storedData), "utf-8");
     } catch (error) {
-      console.error("Error reading cookies file:", error);
-      return [];
+      console.error("Error saving cookies:", error);
     }
   };
   

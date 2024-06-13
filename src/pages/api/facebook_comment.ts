@@ -1,7 +1,7 @@
 // mainHandler.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 import puppeteer, { Page, Browser } from "puppeteer";
-import { setCookies, saveCookies, getCookies } from "./cookieManager"; // Importing the cookie management functions
+import { getCookies, saveCookies, setCookies } from "./cookieManager";
 
 const userAgent = "Mozilla/5.0 (Linux; Android 6.0.1; Moto G (4)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Mobile Safari/537.36";
 const mainPageURL = "https://m.facebook.com";
@@ -103,17 +103,24 @@ const wait = async (delay: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
-const setup = async (): Promise<{ browser: Browser; page: Page }> => {
+const setup = async (email: string): Promise<{ browser: Browser; page: Page }> => {
   const browser = await puppeteer.launch({ headless: false, defaultViewport: null, args: ["--start-maximized", "--lang=en-US"] });
   const page = await browser.newPage();
   await page.setUserAgent(userAgent);
   await page.goto(mainPageURL);
 
-  const cookies = await getCookies();
-  await setCookies(page, cookies);
+  const cookies = await getCookies(email);
+  if (cookies) {
+    await setCookies(page, cookies);
+  } else {
+    console.error(`Cookies not found for email: ${email}`);
+    // Handle the case where cookies are not found, possibly prompt for login again
+  }
 
   return { browser, page };
 };
+
+
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
@@ -126,7 +133,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-      const { browser, page } = await setup();
+      const { browser, page } = await setup(email);
 
       await navigateToUrl(page, url);
       await handleAcceptCookies(page, ["Akzeptieren", "Accept", "Accept all cookies", "Accept all", "Allow", "Allow all", "Allow all cookies", "Ok", "Povolit všechny soubory cookie"]);
@@ -134,7 +141,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       await postComment(page, comment);
       const screenshot = await takeScreenshot(page);
 
-      await saveCookies(page);
+      await saveCookies(email, await page.cookies());
 
       await browser.close();
 
