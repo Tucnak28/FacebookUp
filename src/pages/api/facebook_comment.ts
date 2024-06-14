@@ -45,6 +45,7 @@ const loginToFacebook = async (page: Page, email: string, password: string): Pro
   }
 };
 
+
 const postComment = async (page: Page, comment: string): Promise<void> => {
   try {
     await page.waitForSelector("textarea[name=comment_text]");
@@ -56,6 +57,27 @@ const postComment = async (page: Page, comment: string): Promise<void> => {
     throw new Error("Failed to post the comment");
   }
 };
+
+const likePost = async (page: puppeteer.Page): Promise<void> => {
+  try {
+    const likeButtonSelector = 'td a[href*="/like.php"]';
+
+    // Wait for the like button to appear
+    await page.waitForSelector(likeButtonSelector, { timeout: 1000 });
+    
+    const likeButton = await page.$(likeButtonSelector);
+    if (likeButton) {
+      await likeButton.click();
+      console.log('Clicked the Like button successfully');
+    } else {
+      console.error('Like button not found');
+    }
+    
+  } catch (error) {
+    console.error("Error clicking the Like button:", error);
+  }
+};
+
 
 const takeScreenshot = async (page: Page): Promise<string> => {
   try {
@@ -160,9 +182,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       await navigateToUrl(page, mbasicUrl);
       await handleAcceptCookies(page, ["Akzeptieren", "Accept", "Accept all cookies", "Accept all", "Allow", "Allow all", "Allow all cookies", "Ok", "Povolit všechny soubory cookie"]);
-
+      
       await postComment(page, comment);
       const screenshot = await takeScreenshot(page);
+
+      await likePost(page);
+
+      await page.waitForNavigation({ waitUntil: "networkidle2" });
 
       await browser.close();
 
