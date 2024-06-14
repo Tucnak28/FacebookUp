@@ -7,7 +7,7 @@ const userAgent = "Mozilla/5.0 (Linux; Android 6.0.1; Moto G (4)) AppleWebKit/53
 const mainPageURL = "https://mbasic.facebook.com";
 
 function extractMbasicUrl(postUrl: string): string | null {
-  const match = postUrl.match(/facebook\.com\/(?:.*\/)?(?:photo\.php\?fbid=|photo\/\?fbid=|permalink\.php\?story_fbid=|posts\/|videos\/|video\.php\?v=|groups\/[^\/]+\/permalink\/|reel\/)(\d+)/);
+  const match = postUrl.match(/facebook\.com\/(?:.*\/)?(?:photo\.php\?fbid=|photo\/\?fbid=|permalink\.php\?story_fbid=|posts\/|videos\/|video\.php\?v=|groups\/[^\/]+\/permalink\/|reel\/|photo\?fbid=)(\d+)/);
   if (!match || match.length < 2) {
     console.log("URL parsing error");
     return null;
